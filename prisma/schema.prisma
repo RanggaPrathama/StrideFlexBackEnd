@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model brand {
+  id_brand   Int      @id @default(autoincrement())
+  nama_brand String   @db.VarChar(45)
+  created_at DateTime @default(now())
+  gambar_brand String @db.VarChar(100)
+  url_gambar String @db.VarChar(100)
+  sepatu     sepatu[]
+}
+
+model kategori_sepatu{
+  idkategori_sepatu Int @id @default(autoincrement())
+  nama_kategori String @db.VarChar(45)
+  created_at DateTime @default(now())
+  sepatu sepatu[]
+}
+
+model warna{
+  id_warna Int @id @default(autoincrement())
+  nama_warna String @db.VarChar(45)
+  tag_warna String @db.VarChar(45)
+  created_at DateTime @default(now())
+  detail_sepatu_warna detail_sepatu[]
+}
+
+model ukuran {
+  id_ukuran Int @id @default(autoincrement())
+  nomor_ukuran Int 
+  detail_sepatu_warna detail_sepatu[]
+}
+
+model sepatu {
+  id_sepatu        Int    @id @default(autoincrement())
+  nama_sepatu      String @db.VarChar(45)
+  brand_id_brand   Int
+  kategori_id_kategori Int
+  jenis_kelamin    Int    @db.TinyInt
+  deskripsi_sepatu String @db.VarChar(45)
+  gambar_sepatu String @db.VarChar(100)
+  url_gambar String @db.VarChar(100)
+  created_at DateTime @default(now())
+  brand            brand  @relation(fields: [brand_id_brand], references: [id_brand], onDelete: NoAction, onUpdate: NoAction, map: "fk_sepatu_Brand")
+  kategori_sepatu kategori_sepatu @relation(fields: [kategori_id_kategori], references: [idkategori_sepatu], onDelete: NoAction, onUpdate: NoAction, map: "fk_sepatu_Kategori") 
+  detail_sepatu_warna detail_sepatu[]
+
+  @@index([kategori_id_kategori], map: "fk_sepatu_kategori_idx")
+  @@index([brand_id_brand], map: "fk_sepatu_Brand_idx")
+
+}
+
+model detail_sepatu {
+  idDetail_sepatu Int @id @default(autoincrement())
+  warna_id_warna Int
+  sepatu_id_sepatu Int
+  ukuran_id_ukuran Int
+  harga_sepatu     Int
+  stok          Int
+  status  Int @db.TinyInt @default(1)
+  Timestamp DateTime @default(now())
+  ukuran ukuran @relation(fields: [ukuran_id_ukuran], references: [id_ukuran], onDelete: NoAction, onUpdate: NoAction,map: "fk_detail_Ukuran")
+  warna   warna @relation(fields: [warna_id_warna], references: [id_warna], onDelete: NoAction, onUpdate: NoAction, map: "fk_detail_Warna")
+  sepatu sepatu @relation(fields: [sepatu_id_sepatu], references: [id_sepatu], onDelete: NoAction, onUpdate: NoAction, map: "fk_detail_sepatu")
+  @@index([ukuran_id_ukuran], map: "fk_detail_Ukuran_idx")
+  @@index([warna_id_warna], map: "fk_detail_Warna_idx")
+  @@index([sepatu_id_sepatu], map: "fk_detail_sepatu_idx")
+}
+
+
+model user {
+  id_user          Int      @id @default(autoincrement())
+  nama_user        String   @db.VarChar(45)
+  email            String   @db.VarChar(45)
+  password         String   @db.VarChar(45)
+  regenerate_token String   @db.VarChar(45)
+  created_at       DateTime @db.Timestamp(0)
+  role             Int      @db.TinyInt
+}
