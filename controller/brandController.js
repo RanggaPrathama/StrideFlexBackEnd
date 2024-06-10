@@ -34,14 +34,13 @@ const upload = multer({
 const indexBrand = async (req,res) => {
     try {
         // const Brand = await prisma.brand.findMany();
-        const Brand = await prisma.brand.findMany({
-            // relationLoadStrategy:'join',
-            include:{
-                _count:{
-                    select:{sepatu:true}
-                }
-            }
-        })
+        const Brand = await prisma.$queryRaw`
+        select b.id_brand, b.nama_brand, b.gambar_brand, CAST(COUNT(ds.sepatu_id_sepatu) AS CHAR) AS total_sepatu
+        FROM brand b
+        LEFT JOIN sepatu_version sv ON b.id_brand = sv.brand_id_brand
+        LEFT JOIN detail_sepatu ds ON sv.id_sepatu = ds.sepatu_id_sepatu
+        GROUP BY b.id_brand, b.nama_brand;
+        `
         res.status(200).json({data: Brand, message: 'Brand Berhasil diload '}); 
         //res.render('brand',{brand : Brand});    
     } catch (error) {

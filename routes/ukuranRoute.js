@@ -1,9 +1,9 @@
 import express from 'express'
-import {getUkuran, createUkuran} from '../controller/ukuranController.js'
+import {getUkuranByIdDetail, createUkuran} from '../controller/ukuranController.js'
 
 const routerUkuran = express.Router()
 
-routerUkuran.get('/', getUkuran)
+routerUkuran.get('/detail/:id_detail', getUkuranByIdDetail)
 routerUkuran.post('/create', createUkuran)
 
 export default routerUkuran;

@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["relationJoins"]
 }
 
@@ -9,78 +9,199 @@ datasource db {
 }
 
 model brand {
-  id_brand   Int      @id @default(autoincrement())
-  nama_brand String   @db.VarChar(45)
-  created_at DateTime @default(now())
-  gambar_brand String @db.VarChar(100)
-  url_gambar String @db.VarChar(100)
-  sepatu     sepatu[]
+  id_brand       Int              @id @default(autoincrement())
+  nama_brand     String           @db.VarChar(45)
+  gambar_brand   String           @db.VarChar(100)
+  url_gambar     String           @db.VarChar(300)
+  created_at     DateTime         @default(now())
+  sepatu_version sepatu_version[]
 }
 
-model kategori_sepatu{
-  idkategori_sepatu Int @id @default(autoincrement())
-  nama_kategori String @db.VarChar(45)
-  created_at DateTime @default(now())
-  sepatu sepatu[]
+model cart {
+  id_cart      Int       @id @default(autoincrement())
+  user_id_user Int
+  stok_id_stok Int
+  quantity     Int       @default(1)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime?
+  status       Int       @default(1) @db.TinyInt
+  user         user      @relation(fields: [user_id_user], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_user_cart")
+  stok         stok      @relation(fields: [stok_id_stok], references: [id_stok], onDelete: Cascade, onUpdate: Cascade, map: "fk_stok_cart")
+
+  @@index([user_id_user], map: "user_cart_idx")
+  @@index([stok_id_stok], map: "stok_cart_idx")
 }
 
-model warna{
-  id_warna Int @id @default(autoincrement())
-  nama_warna String @db.VarChar(45)
-  tag_warna String @db.VarChar(45)
-  created_at DateTime @default(now())
-  detail_sepatu_warna detail_sepatu[]
+model kategori_sepatu {
+  idkategori_sepatu Int              @id @default(autoincrement())
+  nama_kategori     String           @db.VarChar(45)
+  created_at        DateTime         @default(now())
+  sepatu_version    sepatu_version[]
 }
 
 model ukuran {
-  id_ukuran Int @id @default(autoincrement())
-  nomor_ukuran Int 
-  detail_sepatu_warna detail_sepatu[]
-}
-
-model sepatu {
-  id_sepatu        Int    @id @default(autoincrement())
-  nama_sepatu      String @db.VarChar(45)
-  brand_id_brand   Int
-  kategori_id_kategori Int
-  jenis_kelamin    Int    @db.TinyInt
-  deskripsi_sepatu String @db.VarChar(45)
-  gambar_sepatu String @db.VarChar(100)
-  url_gambar String @db.VarChar(100)
-  created_at DateTime @default(now())
-  brand            brand  @relation(fields: [brand_id_brand], references: [id_brand], onDelete: NoAction, onUpdate: NoAction, map: "fk_sepatu_Brand")
-  kategori_sepatu kategori_sepatu @relation(fields: [kategori_id_kategori], references: [idkategori_sepatu], onDelete: NoAction, onUpdate: NoAction, map: "fk_sepatu_Kategori") 
-  detail_sepatu_warna detail_sepatu[]
-
-  @@index([kategori_id_kategori], map: "fk_sepatu_kategori_idx")
-  @@index([brand_id_brand], map: "fk_sepatu_Brand_idx")
-
+  id_ukuran    Int      @id @default(autoincrement())
+  nomor_ukuran Int
+  created_at   DateTime @default(now())
+  stok         stok[]
 }
 
 model detail_sepatu {
-  idDetail_sepatu Int @id @default(autoincrement())
-  warna_id_warna Int
+  idDetail_sepatu  Int             @id @default(autoincrement())
   sepatu_id_sepatu Int
-  ukuran_id_ukuran Int
   harga_sepatu     Int
-  stok          Int
-  status  Int @db.TinyInt @default(1)
-  Timestamp DateTime @default(now())
-  ukuran ukuran @relation(fields: [ukuran_id_ukuran], references: [id_ukuran], onDelete: NoAction, onUpdate: NoAction,map: "fk_detail_Ukuran")
-  warna   warna @relation(fields: [warna_id_warna], references: [id_warna], onDelete: NoAction, onUpdate: NoAction, map: "fk_detail_Warna")
-  sepatu sepatu @relation(fields: [sepatu_id_sepatu], references: [id_sepatu], onDelete: NoAction, onUpdate: NoAction, map: "fk_detail_sepatu")
-  @@index([ukuran_id_ukuran], map: "fk_detail_Ukuran_idx")
-  @@index([warna_id_warna], map: "fk_detail_Warna_idx")
+  status           Int             @default(1) @db.TinyInt
+  Timestamp        DateTime        @default(now())
+  warna            String          @db.VarChar(100)
+  sepatu           sepatu_version  @relation(fields: [sepatu_id_sepatu], references: [id_sepatu], onDelete: Cascade, map: "fk_detail_sepatu")
+  sepatu_gambar    sepatu_gambar[]
+  stok             stok[]
+  favorite         favorite[]
+
   @@index([sepatu_id_sepatu], map: "fk_detail_sepatu_idx")
 }
 
-
 model user {
-  id_user          Int      @id @default(autoincrement())
-  nama_user        String   @db.VarChar(45)
-  email            String   @db.VarChar(45)
-  password         String   @db.VarChar(45)
-  regenerate_token String   @db.VarChar(45)
-  created_at       DateTime @db.Timestamp(0)
-  role             Int      @db.TinyInt
+  id_user        Int        @id @default(autoincrement())
+  nama_user      String     @db.VarChar(50)
+  email          String     @unique @db.VarChar(100)
+  password       String     @db.VarChar(100)
+  gambar_profile String?    @default("") @db.VarChar(100)
+  urlProfile     String?    @default("") @db.VarChar(300)
+  phoneNumber    String?
+  refresh_token  String?    @default("")
+  created_at     DateTime   @default(now())
+  role           Int        @default(1) @db.TinyInt
+  statusAktif     Int       @default(1) @db.TinyInt
+  cart           cart[]
+  favorite       favorite[]
+  alamat_user   alamat_user[]
+  pemesanan    pemesanan[]
+}
+
+model sepatu_version {
+  id_sepatu            Int             @id @default(autoincrement())
+  nama_sepatu          String          @db.VarChar(45)
+  brand_id_brand       Int
+  kategori_id_kategori Int
+  jenis_kelamin        Int             @db.TinyInt
+  deskripsi_sepatu     String          @db.Text
+  created_at           DateTime        @default(now())
+  detail_sepatu_warna  detail_sepatu[]
+  brand                brand           @relation(fields: [brand_id_brand], references: [id_brand], onDelete: Cascade, map: "fk_sepatu_Brand")
+  kategori_sepatu      kategori_sepatu @relation(fields: [kategori_id_kategori], references: [idkategori_sepatu], onDelete: Cascade, map: "fk_sepatu_Kategori")
+
+  @@index([brand_id_brand], map: "fk_sepatu_Brand_idx")
+  @@index([kategori_id_kategori], map: "fk_sepatu_kategori_idx")
+}
+
+model alamat_user{
+  id_alamat Int  @id @default(autoincrement())
+  user_id_user Int 
+  alamat String?  @db.Text
+  status Int @db.TinyInt @default(0) 
+  user  user @relation(fields: [user_id_user], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_User_address")
+  @@index([user_id_user],map: "fk_User_address_idx")
+}
+
+model sepatu_gambar {
+  idsepatu_gambar               Int           @id @default(autoincrement())
+  gambar_sepatu                 String        @db.VarChar(100)
+  url_gambar                    String        @db.VarChar(300)
+  created_at                    DateTime      @default(now())
+  detail_sepatu_idDetail_sepatu Int
+  detail_sepatu                 detail_sepatu @relation(fields: [detail_sepatu_idDetail_sepatu], references: [idDetail_sepatu], onDelete: Cascade, map: "fk_sepatu_gambar_detail_sepatu1")
+
+  @@index([detail_sepatu_idDetail_sepatu], map: "fk_sepatu_gambar_detail_sepatu1_idx")
+}
+
+model stok {
+  id_stok                       Int           @id @default(autoincrement())
+  stock                         Int
+  ukuran_id_ukuran              Int
+  detail_sepatu_idDetail_sepatu Int
+  status                        Int           @default(1) @db.TinyInt
+  detail_sepatu                 detail_sepatu @relation(fields: [detail_sepatu_idDetail_sepatu], references: [idDetail_sepatu], onDelete: Cascade, map: "fk_stok_detail_sepatu1")
+  ukuran                        ukuran        @relation(fields: [ukuran_id_ukuran], references: [id_ukuran], onDelete: Cascade, map: "fk_stok_ukuran")
+  cart                          cart[]
+  detail_pemesanan              detail_pemesanan[]
+
+  @@index([detail_sepatu_idDetail_sepatu], map: "fk_stok_detail_sepatu1_idx")
+  @@index([ukuran_id_ukuran], map: "fk_stok_ukuran_idx")
+}
+
+model pemesanan{
+  id_pemesanan Int @id @default(autoincrement())
+  user_id_user Int 
+  created_at DateTime? @default(now())
+  updated_at DateTime?
+  status Int  @db.TinyInt @default(1)
+  total_nilai Int
+  detail_pemesanan detail_pemesanan[]
+  pembayaran pembayaran[]
+  user user @relation(fields: [user_id_user], references: [id_user], map: "pemesanan_user_fk")
+  @@index([user_id_user], map: "pemesanan_user_idx")
+}
+
+model detail_pemesanan{
+  idDetail_pemesanan Int @id @default(autoincrement())
+  pemesanan_id_pemesanan Int 
+  stok_id_stok Int
+  quantity Int 
+  harga_sepatu Int
+  subtotal Int
+  stok     stok @relation(fields: [stok_id_stok], references: [id_stok], map: "detail_stok_fk")  
+  pemesanan pemesanan @relation(fields: [pemesanan_id_pemesanan],references: [id_pemesanan],onDelete: Cascade,map: "pemesanan_detail_fk")
+  @@index([pemesanan_id_pemesanan],map: "pemesanan_detail_idx")
+  @@index([stok_id_stok], map: "detail_stok_idx")
+}
+
+model payments {
+  id_payment Int @id @default(autoincrement())
+  atas_nama String @db.VarChar(100)
+  no_rekening Int 
+  nama_bank String @db.VarChar(100)
+  gambar_bank String @db.VarChar(100)
+  pembayaran pembayaran[]
+}
+
+model jenis_ongkir {
+  id_ongkir Int @id @default(autoincrement())
+  nama_ongkir String @db.VarChar(100)
+  harga_ongkir Int 
+  status Int @db.TinyInt @default(1)
+  pembayaran pembayaran[]
+}
+
+model pembayaran {
+  id_pembayaran Int @id @default(autoincrement())
+  payment_id_payment Int
+  ongkir_id_ongkir Int
+  pemesanan_id_pemesanan Int
+  total_pembayaran Int
+  bukti_pembayaran String? @db.VarChar(255)
+  status Int @db.TinyInt @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime?
+  pemesanan pemesanan @relation(fields: [pemesanan_id_pemesanan], references: [id_pemesanan], map: "pembayaran_pemesanan_fk")
+  jenis_ongkir jenis_ongkir @relation(fields: [ongkir_id_ongkir],references: [id_ongkir],onDelete: Cascade, map: "pembayaran_ongkir_fk")
+  payments payments @relation(fields: [payment_id_payment],references: [id_payment],onDelete: Cascade, map: "pembayaran_payment_fk")
+  @@index( [payment_id_payment],map: "pembayaran_payment_idx")
+  @@index( [ongkir_id_ongkir],map: "pembayaran_ongkir_idx")
+  @@index([pemesanan_id_pemesanan],map: "pemesanan_pembayaran_idx")
+
+}
+
+model favorite {
+  id_favorit                    Int           @id @default(autoincrement())
+  user_id_user                  Int
+  detail_sepatu_idDetail_sepatu Int
+  status                        Int           @default(1) @db.TinyInt
+  created_at                    DateTime      @default(now())
+  updated_at                    DateTime?
+  user                          user          @relation(fields: [user_id_user], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_user_favorite")
+  detail_sepatu                 detail_sepatu @relation(fields: [detail_sepatu_idDetail_sepatu], references: [idDetail_sepatu], onDelete: Cascade, map: "fk_favorite_detail_sepatu1")
+
+  @@index([detail_sepatu_idDetail_sepatu], map: "fk_favorite_detail_sepatu")
+  @@index([user_id_user], map: "fk_user_favorite_")
 }

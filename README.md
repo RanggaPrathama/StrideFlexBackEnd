@@ -1,2 +1,0 @@
-# StrideFlexBackEnd
-Backend Express
