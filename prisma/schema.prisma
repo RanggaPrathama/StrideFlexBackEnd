@@ -8,6 +8,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model brand {
   id_brand       Int              @id @default(autoincrement())
   nama_brand     String           @db.VarChar(45)
