@@ -8,7 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model brand {
   id_brand       Int              @id @default(autoincrement())
   nama_brand     String           @db.VarChar(45)
@@ -26,8 +25,8 @@ model cart {
   created_at   DateTime  @default(now())
   updated_at   DateTime?
   status       Int       @default(1) @db.TinyInt
-  user         user      @relation(fields: [user_id_user], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_user_cart")
-  stok         stok      @relation(fields: [stok_id_stok], references: [id_stok], onDelete: Cascade, onUpdate: Cascade, map: "fk_stok_cart")
+  stok         stok      @relation(fields: [stok_id_stok], references: [id_stok], onDelete: Cascade, map: "fk_stok_cart")
+  user         user      @relation(fields: [user_id_user], references: [id_user], onDelete: Cascade, map: "fk_user_cart")
 
   @@index([user_id_user], map: "user_cart_idx")
   @@index([stok_id_stok], map: "stok_cart_idx")
@@ -55,29 +54,29 @@ model detail_sepatu {
   Timestamp        DateTime        @default(now())
   warna            String          @db.VarChar(100)
   sepatu           sepatu_version  @relation(fields: [sepatu_id_sepatu], references: [id_sepatu], onDelete: Cascade, map: "fk_detail_sepatu")
+  favorite         favorite[]
   sepatu_gambar    sepatu_gambar[]
   stok             stok[]
-  favorite         favorite[]
 
   @@index([sepatu_id_sepatu], map: "fk_detail_sepatu_idx")
 }
 
 model user {
-  id_user        Int        @id @default(autoincrement())
-  nama_user      String     @db.VarChar(50)
-  email          String     @unique @db.VarChar(100)
-  password       String     @db.VarChar(100)
-  gambar_profile String?    @default("") @db.VarChar(100)
-  urlProfile     String?    @default("") @db.VarChar(300)
+  id_user        Int           @id @default(autoincrement())
+  nama_user      String        @db.VarChar(50)
+  email          String        @unique @db.VarChar(100)
+  password       String        @db.VarChar(100)
+  gambar_profile String?       @default("") @db.VarChar(100)
+  urlProfile     String?       @default("") @db.VarChar(300)
   phoneNumber    String?
-  refresh_token  String?    @default("")
-  created_at     DateTime   @default(now())
-  role           Int        @default(1) @db.TinyInt
-  statusAktif     Int       @default(1) @db.TinyInt
+  refresh_token  String?       @default("")
+  created_at     DateTime      @default(now())
+  role           Int           @default(1) @db.TinyInt
+  statusAktif    Int           @default(1) @db.TinyInt
+  alamat_user    alamat_user[]
   cart           cart[]
   favorite       favorite[]
-  alamat_user   alamat_user[]
-  pemesanan    pemesanan[]
+  pemesanan      pemesanan[]
 }
 
 model sepatu_version {
@@ -96,13 +95,14 @@ model sepatu_version {
   @@index([kategori_id_kategori], map: "fk_sepatu_kategori_idx")
 }
 
-model alamat_user{
-  id_alamat Int  @id @default(autoincrement())
-  user_id_user Int 
-  alamat String?  @db.Text
-  status Int @db.TinyInt @default(0) 
-  user  user @relation(fields: [user_id_user], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_User_address")
-  @@index([user_id_user],map: "fk_User_address_idx")
+model alamat_user {
+  id_alamat    Int     @id @default(autoincrement())
+  user_id_user Int
+  alamat       String? @db.Text
+  status       Int     @default(0) @db.TinyInt
+  user         user    @relation(fields: [user_id_user], references: [id_user], onDelete: Cascade, map: "fk_User_address")
+
+  @@index([user_id_user], map: "fk_User_address_idx")
 }
 
 model sepatu_gambar {
@@ -117,80 +117,82 @@ model sepatu_gambar {
 }
 
 model stok {
-  id_stok                       Int           @id @default(autoincrement())
+  id_stok                       Int                @id @default(autoincrement())
   stock                         Int
   ukuran_id_ukuran              Int
   detail_sepatu_idDetail_sepatu Int
-  status                        Int           @default(1) @db.TinyInt
-  detail_sepatu                 detail_sepatu @relation(fields: [detail_sepatu_idDetail_sepatu], references: [idDetail_sepatu], onDelete: Cascade, map: "fk_stok_detail_sepatu1")
-  ukuran                        ukuran        @relation(fields: [ukuran_id_ukuran], references: [id_ukuran], onDelete: Cascade, map: "fk_stok_ukuran")
+  status                        Int                @default(1) @db.TinyInt
   cart                          cart[]
   detail_pemesanan              detail_pemesanan[]
+  detail_sepatu                 detail_sepatu      @relation(fields: [detail_sepatu_idDetail_sepatu], references: [idDetail_sepatu], onDelete: Cascade, map: "fk_stok_detail_sepatu1")
+  ukuran                        ukuran             @relation(fields: [ukuran_id_ukuran], references: [id_ukuran], onDelete: Cascade, map: "fk_stok_ukuran")
 
   @@index([detail_sepatu_idDetail_sepatu], map: "fk_stok_detail_sepatu1_idx")
   @@index([ukuran_id_ukuran], map: "fk_stok_ukuran_idx")
 }
 
-model pemesanan{
-  id_pemesanan Int @id @default(autoincrement())
-  user_id_user Int 
-  created_at DateTime? @default(now())
-  updated_at DateTime?
-  status Int  @db.TinyInt @default(1)
-  total_nilai Int
+model pemesanan {
+  id_pemesanan     Int                @id @default(autoincrement())
+  user_id_user     Int
+  created_at       DateTime?          @default(now())
+  updated_at       DateTime?
+  status           Int                @default(1) @db.TinyInt
+  total_nilai      Int
   detail_pemesanan detail_pemesanan[]
-  pembayaran pembayaran[]
-  user user @relation(fields: [user_id_user], references: [id_user], map: "pemesanan_user_fk")
+  pembayaran       pembayaran[]
+  user             user               @relation(fields: [user_id_user], references: [id_user], map: "pemesanan_user_fk")
+
   @@index([user_id_user], map: "pemesanan_user_idx")
 }
 
-model detail_pemesanan{
-  idDetail_pemesanan Int @id @default(autoincrement())
-  pemesanan_id_pemesanan Int 
-  stok_id_stok Int
-  quantity Int 
-  harga_sepatu Int
-  subtotal Int
-  stok     stok @relation(fields: [stok_id_stok], references: [id_stok], map: "detail_stok_fk")  
-  pemesanan pemesanan @relation(fields: [pemesanan_id_pemesanan],references: [id_pemesanan],onDelete: Cascade,map: "pemesanan_detail_fk")
-  @@index([pemesanan_id_pemesanan],map: "pemesanan_detail_idx")
+model detail_pemesanan {
+  idDetail_pemesanan     Int       @id @default(autoincrement())
+  pemesanan_id_pemesanan Int
+  stok_id_stok           Int
+  quantity               Int
+  harga_sepatu           Int
+  subtotal               Int
+  stok                   stok      @relation(fields: [stok_id_stok], references: [id_stok], map: "detail_stok_fk")
+  pemesanan              pemesanan @relation(fields: [pemesanan_id_pemesanan], references: [id_pemesanan], onDelete: Cascade, map: "pemesanan_detail_fk")
+
+  @@index([pemesanan_id_pemesanan], map: "pemesanan_detail_idx")
   @@index([stok_id_stok], map: "detail_stok_idx")
 }
 
 model payments {
-  id_payment Int @id @default(autoincrement())
-  atas_nama String @db.VarChar(100)
-  no_rekening Int 
-  nama_bank String @db.VarChar(100)
-  gambar_bank String @db.VarChar(100)
-  pembayaran pembayaran[]
+  id_payment  Int          @id @default(autoincrement())
+  atas_nama   String       @db.VarChar(100)
+  no_rekening Int
+  nama_bank   String       @db.VarChar(100)
+  gambar_bank String       @db.VarChar(100)
+  pembayaran  pembayaran[]
 }
 
 model jenis_ongkir {
-  id_ongkir Int @id @default(autoincrement())
-  nama_ongkir String @db.VarChar(100)
-  harga_ongkir Int 
-  status Int @db.TinyInt @default(1)
-  pembayaran pembayaran[]
+  id_ongkir    Int          @id @default(autoincrement())
+  nama_ongkir  String       @db.VarChar(100)
+  harga_ongkir Int
+  status       Int          @default(1) @db.TinyInt
+  pembayaran   pembayaran[]
 }
 
 model pembayaran {
-  id_pembayaran Int @id @default(autoincrement())
-  payment_id_payment Int
-  ongkir_id_ongkir Int
+  id_pembayaran          Int          @id @default(autoincrement())
+  payment_id_payment     Int
+  ongkir_id_ongkir       Int
   pemesanan_id_pemesanan Int
-  total_pembayaran Int
-  bukti_pembayaran String? @db.VarChar(255)
-  status Int @db.TinyInt @default(0)
-  created_at DateTime @default(now())
-  updated_at DateTime?
-  pemesanan pemesanan @relation(fields: [pemesanan_id_pemesanan], references: [id_pemesanan], map: "pembayaran_pemesanan_fk")
-  jenis_ongkir jenis_ongkir @relation(fields: [ongkir_id_ongkir],references: [id_ongkir],onDelete: Cascade, map: "pembayaran_ongkir_fk")
-  payments payments @relation(fields: [payment_id_payment],references: [id_payment],onDelete: Cascade, map: "pembayaran_payment_fk")
-  @@index( [payment_id_payment],map: "pembayaran_payment_idx")
-  @@index( [ongkir_id_ongkir],map: "pembayaran_ongkir_idx")
-  @@index([pemesanan_id_pemesanan],map: "pemesanan_pembayaran_idx")
+  total_pembayaran       Int
+  bukti_pembayaran       String?      @db.VarChar(255)
+  status                 Int          @default(0) @db.TinyInt
+  created_at             DateTime     @default(now())
+  updated_at             DateTime?
+  jenis_ongkir           jenis_ongkir @relation(fields: [ongkir_id_ongkir], references: [id_ongkir], onDelete: Cascade, map: "pembayaran_ongkir_fk")
+  payments               payments     @relation(fields: [payment_id_payment], references: [id_payment], onDelete: Cascade, map: "pembayaran_payment_fk")
+  pemesanan              pemesanan    @relation(fields: [pemesanan_id_pemesanan], references: [id_pemesanan], map: "pembayaran_pemesanan_fk")
 
+  @@index([payment_id_payment], map: "pembayaran_payment_idx")
+  @@index([ongkir_id_ongkir], map: "pembayaran_ongkir_idx")
+  @@index([pemesanan_id_pemesanan], map: "pemesanan_pembayaran_idx")
 }
 
 model favorite {
@@ -200,8 +202,8 @@ model favorite {
   status                        Int           @default(1) @db.TinyInt
   created_at                    DateTime      @default(now())
   updated_at                    DateTime?
-  user                          user          @relation(fields: [user_id_user], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_user_favorite")
   detail_sepatu                 detail_sepatu @relation(fields: [detail_sepatu_idDetail_sepatu], references: [idDetail_sepatu], onDelete: Cascade, map: "fk_favorite_detail_sepatu1")
+  user                          user          @relation(fields: [user_id_user], references: [id_user], onDelete: Cascade, map: "fk_user_favorite")
 
   @@index([detail_sepatu_idDetail_sepatu], map: "fk_favorite_detail_sepatu")
   @@index([user_id_user], map: "fk_user_favorite_")
