@@ -9,7 +9,7 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "postinstall": "prisma generate",
-    "build": "prisma generate && vercel build"
+    "build": "prisma generate "
   },
   "author": "Rangga",
   "license": "ISC",
